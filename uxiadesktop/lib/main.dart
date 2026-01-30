@@ -13,13 +13,17 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: AppBar(
+        /* appBar: AppBar(
           title: Text("Hola Mundo!"),
           backgroundColor: Colors.deepPurple,
           elevation: 0,
-        ),
+        ), */
         body: Center(
-          child: LoginView(),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return LoginView(bxConstraints: constraints,);
+            }
+          ) 
         ),
       ),
     );
