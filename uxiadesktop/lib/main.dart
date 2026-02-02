@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uxiadesktop/infrastructure/app_data.dart';
 import 'package:uxiadesktop/views/login_view.dart';
 
 void main() {
@@ -7,6 +8,8 @@ void main() {
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
+
+  static AppData data = AppData();
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +24,7 @@ class MainApp extends StatelessWidget {
         body: Center(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              return LoginView(bxConstraints: constraints,);
+              return LoginView(bxConstraints: constraints);
             }
           ) 
         ),

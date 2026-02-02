@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:uxiadesktop/infrastructure/app_data.dart';
+import 'package:uxiadesktop/main.dart';
 
 class LoginView extends StatefulWidget {
 
   final BoxConstraints bxConstraints;
 
-  const LoginView({super.key, required this.bxConstraints});
+  LoginView({super.key, required this.bxConstraints});
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -13,8 +15,20 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final _urlController = TextEditingController();
+  final _userController = TextEditingController();
+  final _passwordController = TextEditingController();
   
   bool _passwordVisible = false;
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    _urlController.dispose();
+    _userController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +58,7 @@ class _LoginViewState extends State<LoginView> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   TextFormField(
+                    controller: _urlController,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(4.0)
@@ -57,12 +72,13 @@ class _LoginViewState extends State<LoginView> {
                     ),
                     validator: (String? value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter some text';
+                        return 'Please enter a valid URL';
                       }
                       return null;
                     },
                   ),
                   TextFormField(
+                    controller: _userController,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(4.0)
@@ -76,12 +92,13 @@ class _LoginViewState extends State<LoginView> {
                     ),
                     validator: (String? value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter some text';
+                        return 'Please enter a username';
                       }
                       return null;
                     },
                   ),
                   TextFormField(
+                    controller: _passwordController,
                     obscureText: !_passwordVisible,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
@@ -106,7 +123,7 @@ class _LoginViewState extends State<LoginView> {
                     ),
                     validator: (String? value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter some text';
+                        return 'Please enter a password';
                       }
                       return null;
                     },
@@ -146,6 +163,9 @@ class _LoginViewState extends State<LoginView> {
                           // the form is invalid.
                           if (_formKey.currentState!.validate()) {
                             // Process data.
+                            MainApp.data.setServerUrl(_urlController.text);
+                            MainApp.data.callAuthenticateUser(email: _userController.text, password: _passwordController.text);
+                            _urlController.text = MainApp.data.getUrl();
                           }
                         },
                         child: const Text('Log in'),
