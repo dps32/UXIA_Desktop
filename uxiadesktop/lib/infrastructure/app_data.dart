@@ -12,7 +12,7 @@ class AppData extends ChangeNotifier {
   HttpClient? _httpClient;
   String _serverUrl = '';
   late String _sessionId;
-  String? userRole;
+  String? username;
 
   bool get isLoading => _isLoading;
 
@@ -55,6 +55,30 @@ class AppData extends ChangeNotifier {
       final response = await _client!.post(
         Uri.parse('$_serverUrl/api/admin/usuaris/login'),
         body: jsonEncode(body),
+      );
+
+      setLoading(false);
+      notifyListeners();
+      return jsonDecode(response.body);
+    
+    } catch (e) {
+      print("Error during API call: $e");
+      setLoading(false);
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<dynamic> callValidateUser({required String token}) async {
+    setLoading(true);
+    notifyListeners();
+
+    try {
+      final response = await _client!.get(
+        Uri.parse('$_serverUrl/api/admin/usuaris/login'),
+        headers: {
+          "Authorization": "Bearer $token",
+        },
       );
 
       setLoading(false);

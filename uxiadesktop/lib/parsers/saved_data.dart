@@ -6,6 +6,22 @@ class SavedData {
 
   SavedData(this.url, this.token);
 
+  void setUrl(String? url) {
+    this.url = url;
+  }
+
+  void setToken(String? token) {
+    this.token = token;
+  }
+
+  String? getUrl() {
+    return url;
+  }
+
+  String? getToken() {
+    return token;
+  }
+
   factory SavedData.fromXML(XmlDocument xml) {
     final url = xml.getElement('url')!.innerText;
     final token = xml.getElement('token')!.innerText;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uxiadesktop/infrastructure/app_data.dart';
+import 'package:uxiadesktop/parsers/saved_data.dart';
 import 'package:uxiadesktop/views/login_view.dart';
 
 void main() {
@@ -10,6 +11,7 @@ class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
   static AppData data = AppData();
+  static SavedData sd = SavedData(null, null);
 
   @override
   Widget build(BuildContext context) {

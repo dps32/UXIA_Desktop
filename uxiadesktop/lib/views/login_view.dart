@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uxiadesktop/main.dart';
 import 'package:uxiadesktop/parsers/authentication_parser.dart';
-import 'package:uxiadesktop/parsers/saved_data.dart';
+import 'package:uxiadesktop/parsers/validate_user_parser.dart';
+import 'package:uxiadesktop/views/main_view.dart';
+import 'package:xml/xml.dart';
 
 class LoginView extends StatefulWidget {
 
@@ -24,19 +26,93 @@ class _LoginViewState extends State<LoginView> {
   final _passwordController = TextEditingController();
   
   bool _passwordVisible = false;
+  bool _isLoading = false;
 
-  void saveData(String token) async {
-    // Save in XML URL and Token
-    SavedData sd = SavedData(_urlController.text, token);
-    sd.toXML();
-
+  void loadData() async {
     final directory = await getApplicationDocumentsDirectory();
-    final fullPath = '${directory.path}/12345.xml';
+    final fullPath = '${directory.path}/settings.xml';
     final file = File(fullPath);
 
-    // 3. Convertir el XML a String y guardarlo
-    // El método toXmlString(pretty: true) lo hace legible para humanos
-    await file.writeAsString(sd.toXML().toXmlString(pretty: true));
+    setState(() {
+      _isLoading = true;
+    });
+
+    if (await file.exists()) {
+      String rawContent = await file.readAsString();
+      final document = XmlDocument.parse(rawContent);
+      final config = document.findElements('config').first;
+
+      final url = config.getElement('url')!.innerText;
+      final token = config.getElement('token')!.innerText;
+
+      MainApp.sd.url = url;
+      _urlController.text = url;
+
+      if (token == '') {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+      
+      //ValidateUserParser response = ValidateUserParser.fromJson(MainApp.data.callValidateUser(token: token));
+      ValidateUserParser response = ValidateUserParser.fromJson({
+        "status": "NOK",
+        "message": "Informació de l'usuari obtinguda correctament",
+        "data": {
+          "nickname": "SparkleFuzzMcGee",
+          "email": "user@example.com",
+          "telefon": "+34 600 000 000",
+          "validat": true,
+          "tos": true,
+          // Opció per ampliar amb altres camps rellevants sobre l'usuari en el futur.
+        }
+      });
+
+      if (response.status != "OK") {
+        MainApp.sd.token = null;
+        saveData(null);
+        return;
+      }
+      
+      MainApp.data.setSessionId(token);
+      MainApp.data.username = response.data.nickname;
+
+      // Pass to next view
+      goToNextView();
+
+      return;
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  void saveData(String? token) async {
+    // Save in XML URL and Token
+    MainApp.sd.setUrl(_urlController.text);
+    MainApp.sd.setToken(token);
+    MainApp.sd.toXML();
+
+    final directory = await getApplicationDocumentsDirectory();
+    final fullPath = '${directory.path}/settings.xml';
+    final file = File(fullPath);
+
+    await file.writeAsString(MainApp.sd.toXML().toXmlString(pretty: true));
+  }
+
+  void goToNextView() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => MainView()),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
   }
 
   @override
@@ -182,6 +258,10 @@ class _LoginViewState extends State<LoginView> {
                           // Validate will return true if the form is valid, or false if
                           // the form is invalid.
                           if (_formKey.currentState!.validate()) {
+                            setState(() {
+                              _isLoading = true;
+                            });
+
                             // Process data.
                             MainApp.data.setServerUrl(_urlController.text);
                             //AuthenticationParser response = AuthenticationParser.fromJson(MainApp.data.callAuthenticateUser(email: _userController.text, password: _passwordController.text));
@@ -196,6 +276,9 @@ class _LoginViewState extends State<LoginView> {
                                   );
                                 },
                               );
+                              setState(() {
+                                _isLoading = false;
+                              });
                               return;
                             }
                             
@@ -203,6 +286,7 @@ class _LoginViewState extends State<LoginView> {
                             saveData(response.data.token);
 
                             // Pass to next View
+                            goToNextView();
                           }
                         },
                         child: Row(
@@ -215,6 +299,13 @@ class _LoginViewState extends State<LoginView> {
                         ),
                       ),
                     ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Visibility(
+                      visible: _isLoading, // true para mostrar, false para ocultar
+                      child: Text('Connecting with Server...'),
+                    ) 
                   ),
                 ],
               ),
