@@ -1,12 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:uxiadesktop/main.dart';
 import 'package:uxiadesktop/parsers/authentication_parser.dart';
 import 'package:uxiadesktop/parsers/validate_user_parser.dart';
 import 'package:uxiadesktop/views/main_view.dart';
-import 'package:xml/xml.dart';
 
 class LoginView extends StatefulWidget {
 
@@ -29,80 +25,54 @@ class _LoginViewState extends State<LoginView> {
   bool _isLoading = false;
 
   void loadData() async {
-    final directory = await getApplicationDocumentsDirectory();
-    final fullPath = '${directory.path}/settings.xml';
-    final file = File(fullPath);
+    final result = await MainApp.fr.loadData();
+    if (!result) {
+      _urlController.text = MainApp.sd.url!;
+      return;
+    }
 
     setState(() {
       _isLoading = true;
     });
-
-    if (await file.exists()) {
-      String rawContent = await file.readAsString();
-      final document = XmlDocument.parse(rawContent);
-      final config = document.findElements('config').first;
-
-      final url = config.getElement('url')!.innerText;
-      final token = config.getElement('token')!.innerText;
-
-      MainApp.sd.url = url;
-      _urlController.text = url;
-
-      if (token == '') {
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
       
-      //ValidateUserParser response = ValidateUserParser.fromJson(MainApp.data.callValidateUser(token: token));
-      ValidateUserParser response = ValidateUserParser.fromJson({
-        "status": "NOK",
-        "message": "Informació de l'usuari obtinguda correctament",
-        "data": {
-          "nickname": "SparkleFuzzMcGee",
-          "email": "user@example.com",
-          "telefon": "+34 600 000 000",
-          "validat": true,
-          "tos": true,
-          // Opció per ampliar amb altres camps rellevants sobre l'usuari en el futur.
-        }
+    //ValidateUserParser response = ValidateUserParser.fromJson(MainApp.data.callValidateUser(token: token));
+    ValidateUserParser response = ValidateUserParser.fromJson({
+      "status": "OK",
+      "message": "Informació de l'usuari obtinguda correctament",
+      "data": {
+        "nickname": "SparkleFuzzMcGee",
+        "email": "user@example.com",
+        "telefon": "+34 600 000 000",
+        "validat": true,
+        "tos": true,
+        // Opció per ampliar amb altres camps rellevants sobre l'usuari en el futur.
+      }
+    });
+
+    if (response.status != "OK") {
+      MainApp.sd.token = null;
+      MainApp.fr.saveData(MainApp.sd.url, null);
+      setState(() {
+        _isLoading = false;
       });
-
-      if (response.status != "OK") {
-        MainApp.sd.token = null;
-        saveData(null);
-        return;
-      }
-      
-      MainApp.data.setSessionId(token);
-      MainApp.data.username = response.data.nickname;
-
-      // Pass to next view
-      goToNextView();
-
       return;
     }
+    
+    MainApp.data.setSessionId(MainApp.sd.token!);
+    MainApp.data.username = response.data.nickname;
+
+    // Pass to next view
+    goToNextView();
 
     setState(() {
       _isLoading = false;
     });
   }
 
-  void saveData(String? token) async {
-    // Save in XML URL and Token
-    MainApp.sd.setUrl(_urlController.text);
-    MainApp.sd.setToken(token);
-    MainApp.sd.toXML();
-
-    final directory = await getApplicationDocumentsDirectory();
-    final fullPath = '${directory.path}/settings.xml';
-    final file = File(fullPath);
-
-    await file.writeAsString(MainApp.sd.toXML().toXmlString(pretty: true));
-  }
-
   void goToNextView() {
+    setState(() {
+      _isLoading = false;
+    });
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => MainView()),
@@ -283,7 +253,7 @@ class _LoginViewState extends State<LoginView> {
                             }
                             
                             MainApp.data.setSessionId(response.data.token);
-                            saveData(response.data.token);
+                            MainApp.fr.saveData(MainApp.sd.url, response.data.token);
 
                             // Pass to next View
                             goToNextView();
