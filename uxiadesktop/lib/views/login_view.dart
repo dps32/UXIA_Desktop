@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uxiadesktop/infrastructure/app_data.dart';
 import 'package:uxiadesktop/main.dart';
+import 'package:uxiadesktop/parsers/authentication_parser.dart';
 
 class LoginView extends StatefulWidget {
 
@@ -164,8 +165,25 @@ class _LoginViewState extends State<LoginView> {
                           if (_formKey.currentState!.validate()) {
                             // Process data.
                             MainApp.data.setServerUrl(_urlController.text);
-                            MainApp.data.callAuthenticateUser(email: _userController.text, password: _passwordController.text);
-                            _urlController.text = MainApp.data.getUrl();
+                            AuthenticationParser response = AuthenticationParser.fromJson(MainApp.data.callAuthenticateUser(email: _userController.text, password: _passwordController.text));
+                            
+                            if (response.status != 200) {
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    content: Text(response.message),
+                                  );
+                                },
+                              );
+                              return;
+                            }
+                            
+                            MainApp.data.setSessionId(response.data.token);
+
+                            // Save in XML URL and Token
+
+                            // Pass to next View
                           }
                         },
                         child: const Text('Log in'),

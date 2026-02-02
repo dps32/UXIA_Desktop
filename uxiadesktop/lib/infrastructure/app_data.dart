@@ -42,7 +42,7 @@ class AppData extends ChangeNotifier {
   }
 
 
-  Future<Object?> callAuthenticateUser({required String email, required String password}) async {
+  Future<dynamic> callAuthenticateUser({required String email, required String password}) async {
     setLoading(true);
     notifyListeners();
 
