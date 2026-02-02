@@ -11,7 +11,7 @@ class AppData extends ChangeNotifier {
   IOClient? _ioClient;
   HttpClient? _httpClient;
   String _serverUrl = '';
-  late final String _sessionId;
+  late String _sessionId;
   String? userRole;
 
   bool get isLoading => _isLoading;

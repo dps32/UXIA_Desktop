@@ -15,9 +15,11 @@ class SavedData {
 
   XmlDocument toXML() {
     final builder = XmlBuilder();
-
-    builder.xml("<url>$url</url>");
-    builder.xml("<token>$token</token>");
+    builder.declaration(encoding: 'utf-8');
+    builder.element('config', nest: () {
+      builder.element('url', nest: url);
+      builder.element('token', nest: token);
+    });
 
     return builder.buildDocument();
   }

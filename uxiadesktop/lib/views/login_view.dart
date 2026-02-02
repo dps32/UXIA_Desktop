@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:uxiadesktop/infrastructure/app_data.dart';
 import 'package:uxiadesktop/main.dart';
 import 'package:uxiadesktop/parsers/authentication_parser.dart';
 import 'package:uxiadesktop/parsers/saved_data.dart';
@@ -11,7 +10,7 @@ class LoginView extends StatefulWidget {
 
   final BoxConstraints bxConstraints;
 
-  LoginView({super.key, required this.bxConstraints});
+  const LoginView({super.key, required this.bxConstraints});
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -32,7 +31,7 @@ class _LoginViewState extends State<LoginView> {
     sd.toXML();
 
     final directory = await getApplicationDocumentsDirectory();
-    final fullPath = '${directory.path}/data.xml';
+    final fullPath = '${directory.path}/12345.xml';
     final file = File(fullPath);
 
     // 3. Convertir el XML a String y guardarlo
@@ -52,8 +51,8 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: widget.bxConstraints.maxHeight / 2,
-      width: widget.bxConstraints.maxWidth / 2,
+      height: 2 * widget.bxConstraints.maxHeight / 3,
+      width: 2 * widget.bxConstraints.maxWidth / 3,
       child: Container(
         padding: EdgeInsets.all(widget.bxConstraints.maxHeight / 22),
         decoration: BoxDecoration(
@@ -96,6 +95,7 @@ class _LoginViewState extends State<LoginView> {
                       return null;
                     },
                   ),
+                  Padding(padding: EdgeInsetsGeometry.all(8)),
                   TextFormField(
                     controller: _userController,
                     decoration: InputDecoration(
@@ -116,6 +116,7 @@ class _LoginViewState extends State<LoginView> {
                       return null;
                     },
                   ),
+                  Padding(padding: EdgeInsetsGeometry.all(8)),
                   TextFormField(
                     controller: _passwordController,
                     obscureText: !_passwordVisible,
@@ -183,9 +184,10 @@ class _LoginViewState extends State<LoginView> {
                           if (_formKey.currentState!.validate()) {
                             // Process data.
                             MainApp.data.setServerUrl(_urlController.text);
-                            AuthenticationParser response = AuthenticationParser.fromJson(MainApp.data.callAuthenticateUser(email: _userController.text, password: _passwordController.text));
+                            //AuthenticationParser response = AuthenticationParser.fromJson(MainApp.data.callAuthenticateUser(email: _userController.text, password: _passwordController.text));
+                            AuthenticationParser response = AuthenticationParser.fromJson({"status": "OK", "message": "Usuari autenticat correctament", "data": {"token": "D23qswfSgR6VM9cuTuN"}});
                             
-                            if (response.status != 200) {
+                            if (response.status != "OK") {
                               showDialog(
                                 context: context,
                                 builder: (context) {
@@ -203,7 +205,14 @@ class _LoginViewState extends State<LoginView> {
                             // Pass to next View
                           }
                         },
-                        child: const Text('Log in'),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('Log in'),
+                            const Padding(padding: EdgeInsetsGeometry.all(8)),
+                            const Icon(Icons.login)
+                          ],
+                        ),
                       ),
                     ),
                   ),
