@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:uxiadesktop/infrastructure/app_data.dart';
 import 'package:uxiadesktop/main.dart';
 import 'package:uxiadesktop/parsers/authentication_parser.dart';
+import 'package:uxiadesktop/parsers/saved_data.dart';
 
 class LoginView extends StatefulWidget {
 
@@ -21,6 +25,20 @@ class _LoginViewState extends State<LoginView> {
   final _passwordController = TextEditingController();
   
   bool _passwordVisible = false;
+
+  void saveData(String token) async {
+    // Save in XML URL and Token
+    SavedData sd = SavedData(_urlController.text, token);
+    sd.toXML();
+
+    final directory = await getApplicationDocumentsDirectory();
+    final fullPath = '${directory.path}/data.xml';
+    final file = File(fullPath);
+
+    // 3. Convertir el XML a String y guardarlo
+    // El método toXmlString(pretty: true) lo hace legible para humanos
+    await file.writeAsString(sd.toXML().toXmlString(pretty: true));
+  }
 
   @override
   void dispose() {
@@ -180,8 +198,7 @@ class _LoginViewState extends State<LoginView> {
                             }
                             
                             MainApp.data.setSessionId(response.data.token);
-
-                            // Save in XML URL and Token
+                            saveData(response.data.token);
 
                             // Pass to next View
                           }
