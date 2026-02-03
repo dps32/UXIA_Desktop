@@ -5,9 +5,7 @@ import 'package:uxiadesktop/parsers/validate_user_parser.dart';
 import 'package:uxiadesktop/views/main_view.dart';
 
 class LoginView extends StatefulWidget {
-
   final BoxConstraints bxConstraints;
-
   const LoginView({super.key, required this.bxConstraints});
 
   @override
@@ -15,7 +13,6 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
-
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _urlController = TextEditingController();
   final _userController = TextEditingController();
@@ -27,15 +24,16 @@ class _LoginViewState extends State<LoginView> {
   void loadData() async {
     final result = await MainApp.fr.loadData();
     if (!result) {
-      _urlController.text = MainApp.sd.url!;
+      _urlController.text = MainApp.sd.url ?? '';
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
-      
-    //ValidateUserParser response = ValidateUserParser.fromJson(MainApp.data.callValidateUser(token: token));
+    setState(() => _isLoading = true);
+
+    validateUser();
+  }
+
+  void validateUser() {
     ValidateUserParser response = ValidateUserParser.fromJson({
       "status": "OK",
       "message": "Informació de l'usuari obtinguda correctament",
@@ -45,37 +43,26 @@ class _LoginViewState extends State<LoginView> {
         "telefon": "+34 600 000 000",
         "validat": true,
         "tos": true,
-        // Opció per ampliar amb altres camps rellevants sobre l'usuari en el futur.
       }
     });
 
     if (response.status != "OK") {
       MainApp.sd.token = null;
       MainApp.fr.saveData(MainApp.sd.url, null);
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
       return;
     }
     
     MainApp.data.setSessionId(MainApp.sd.token!);
     MainApp.data.username = response.data.nickname;
-
-    // Pass to next view
     goToNextView();
-
-    setState(() {
-      _isLoading = false;
-    });
   }
 
   void goToNextView() {
-    setState(() {
-      _isLoading = false;
-    });
+    setState(() => _isLoading = false);
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => MainView()),
+      MaterialPageRoute(builder: (context) => MainView(bxConstraints: widget.bxConstraints)),
     );
   }
 
@@ -86,8 +73,15 @@ class _LoginViewState extends State<LoginView> {
   }
 
   @override
+  void didUpdateWidget(covariant LoginView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _urlController.text = MainApp.sd.url ?? '';
+    _userController.text = '';
+    _passwordController.text = '';
+  }
+
+  @override
   void dispose() {
-    // Clean up the controller when the widget is disposed.
     _urlController.dispose();
     _userController.dispose();
     _passwordController.dispose();
@@ -96,193 +90,137 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 2 * widget.bxConstraints.maxHeight / 3,
-      width: 2 * widget.bxConstraints.maxWidth / 3,
-      child: Container(
-        padding: EdgeInsets.all(widget.bxConstraints.maxHeight / 22),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8.0),
-          color: Colors.amber
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: widget.bxConstraints.maxHeight / 16,
-          children: [
-            Text(
-              "UXIA Management App",
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.w800
-              ),
+    return Center(
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 450),
+          padding: const EdgeInsets.all(32.0),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.account_balance_wallet, size: 64, color: Colors.blue),
+                const SizedBox(height: 16),
+                const Text(
+                  "UXIA Management",
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text("Please sign in to continue", style: TextStyle(color: Colors.grey[600])),
+                const SizedBox(height: 32),
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      _buildTextField(
+                        controller: _urlController,
+                        label: 'Server URL',
+                        icon: Icons.dns_outlined,
+                        hint: 'http://your.domain.com',
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextField(
+                        controller: _userController,
+                        label: 'Username',
+                        icon: Icons.person_outline,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextField(
+                        controller: _passwordController,
+                        label: 'Password',
+                        icon: Icons.lock_outline,
+                        isPassword: true,
+                      ),
+                      const SizedBox(height: 32),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue[700],
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: _isLoading ? null : _handleLogin,
+                          child: _isLoading 
+                            ? const CircularProgressIndicator(color: Colors.white)
+                            : const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text('Login', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.arrow_forward),
+                                ],
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  TextFormField(
-                    controller: _urlController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4.0)
-                      ),
-                      labelText: 'Server URL',
-                      suffixIcon: Icon(
-                        Icons.storage_outlined,
-                        semanticLabel: 'Server',
-                      ),
-                      hintText: 'https://your.domain.com'
-                    ),
-                    validator: (String? value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a valid URL';
-                      }
-                      return null;
-                    },
-                  ),
-                  Padding(padding: EdgeInsetsGeometry.all(8)),
-                  TextFormField(
-                    controller: _userController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4.0)
-                      ),
-                      labelText: 'Username',
-                      suffixIcon: Icon(
-                        Icons.person,
-                        semanticLabel: 'Username',
-                      ),
-                      hintText: 'user'
-                    ),
-                    validator: (String? value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a username';
-                      }
-                      return null;
-                    },
-                  ),
-                  Padding(padding: EdgeInsetsGeometry.all(8)),
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: !_passwordVisible,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4.0)
-                      ),
-                      labelText: 'Password',
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _passwordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                          color: Colors.blue,
-                          semanticLabel: 'Toggle password visiblity',
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _passwordVisible = !_passwordVisible;
-                          });
-                        },
-                      ),
-                      
-                    ),
-                    validator: (String? value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a password';
-                      }
-                      return null;
-                    },
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: SizedBox(
-                      width: widget.bxConstraints.maxWidth / 8,
-                      height: widget.bxConstraints.maxHeight / 16,
-                      child: ElevatedButton(
-                        style: ButtonStyle(
-                          shape: WidgetStateOutlinedBorder.fromMap({
-                            WidgetState.hovered | WidgetState.pressed: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(16)),
-                            WidgetState.any: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(0)),
-                          }),
-                          animationDuration: Duration(milliseconds: 375),
-                          side: WidgetStateBorderSide.fromMap({
-                            WidgetState.hovered: BorderSide(color: Colors.white, width: 3),
-                            WidgetState.any: BorderSide(color: Colors.blueGrey, width: 1),
-                          }),
-                          shadowColor: WidgetStateColor.fromMap({
-                            WidgetState.hovered: Colors.blueGrey.withValues(alpha: 0.5),
-                            WidgetState.any: Colors.blueGrey.withValues(alpha: 0.1),
-                          }),
-                          backgroundColor: WidgetStateColor.fromMap({
-                            WidgetState.hovered: Colors.deepOrange,
-                            WidgetState.pressed: Colors.blue,
-                            WidgetState.any: Colors.green
-                          }),
-                          textStyle: WidgetStateTextStyle.fromMap({
-                            WidgetState.pressed: const TextStyle(fontWeight: FontWeight.normal),
-                            WidgetState.any: const TextStyle(fontWeight: FontWeight.bold),
-                          }),
-                        ),
-                        onPressed: () {
-                          // Validate will return true if the form is valid, or false if
-                          // the form is invalid.
-                          if (_formKey.currentState!.validate()) {
-                            setState(() {
-                              _isLoading = true;
-                            });
-
-                            // Process data.
-                            MainApp.data.setServerUrl(_urlController.text);
-                            //AuthenticationParser response = AuthenticationParser.fromJson(MainApp.data.callAuthenticateUser(email: _userController.text, password: _passwordController.text));
-                            AuthenticationParser response = AuthenticationParser.fromJson({"status": "OK", "message": "Usuari autenticat correctament", "data": {"token": "D23qswfSgR6VM9cuTuN"}});
-                            
-                            if (response.status != "OK") {
-                              showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    content: Text(response.message),
-                                  );
-                                },
-                              );
-                              setState(() {
-                                _isLoading = false;
-                              });
-                              return;
-                            }
-                            
-                            MainApp.data.setSessionId(response.data.token);
-                            MainApp.fr.saveData(MainApp.sd.url, response.data.token);
-
-                            // Pass to next View
-                            goToNextView();
-                          }
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text('Log in'),
-                            const Padding(padding: EdgeInsetsGeometry.all(8)),
-                            const Icon(Icons.login)
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: Visibility(
-                      visible: _isLoading, // true para mostrar, false para ocultar
-                      child: Text('Connecting with Server...'),
-                    ) 
-                  ),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    String? hint,
+    bool isPassword = false,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: isPassword && !_passwordVisible,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        suffixIcon: isPassword 
+          ? IconButton(
+              icon: Icon(_passwordVisible ? Icons.visibility : Icons.visibility_off),
+              onPressed: () => setState(() => _passwordVisible = !_passwordVisible),
+            )
+          : null,
+      ),
+      validator: (value) => (value == null || value.isEmpty) ? 'Field required' : null,
+    );
+  }
+
+  void _handleLogin() {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+      MainApp.data.setServerUrl(_urlController.text);
+      
+      AuthenticationParser response = AuthenticationParser.fromJson({
+        "status": "OK", 
+        "message": "Usuari autenticat correctament", 
+        "data": {"token": "D23qswfSgR6VM9cuTuN"}
+      });
+      
+      if (response.status != "OK") {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("Error"),
+            content: Text(response.message),
+            actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))],
+          ),
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
+      
+      MainApp.data.setSessionId(response.data.token);
+      MainApp.fr.saveData(MainApp.sd.url, response.data.token);
+
+      validateUser();
+    }
   }
 }

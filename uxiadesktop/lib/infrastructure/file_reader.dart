@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:uxiadesktop/main.dart';
-import 'package:uxiadesktop/parsers/validate_user_parser.dart';
 import 'package:xml/xml.dart';
 
 class FileReader {

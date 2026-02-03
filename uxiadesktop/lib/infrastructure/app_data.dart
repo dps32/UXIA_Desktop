@@ -75,10 +75,68 @@ class AppData extends ChangeNotifier {
 
     try {
       final response = await _client!.get(
-        Uri.parse('$_serverUrl/api/admin/usuaris/login'),
+        Uri.parse('$_serverUrl/api/usuaris/perfil'),
         headers: {
           "Authorization": "Bearer $token",
         },
+      );
+
+      setLoading(false);
+      notifyListeners();
+      return jsonDecode(response.body);
+    
+    } catch (e) {
+      print("Error during API call: $e");
+      setLoading(false);
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<dynamic> callValidateToken({required String username, required String token}) async {
+    setLoading(true);
+    notifyListeners();
+
+    final body = {
+      "username": username,
+    };
+
+    try {
+      final response = await _client!.post(
+        Uri.parse('$_serverUrl/api/admin/usuaris/testtoken'),
+        headers: {
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode(body)
+      );
+
+      setLoading(false);
+      notifyListeners();
+      return jsonDecode(response.body);
+    
+    } catch (e) {
+      print("Error during API call: $e");
+      setLoading(false);
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<dynamic> callLogOut({required String username, required String token}) async {
+    setLoading(true);
+    notifyListeners();
+
+    final body = {
+      "username": username,
+    };
+
+    try {
+      final response = await _client!.post(
+        Uri.parse('$_serverUrl/api/admin/usuaris/logout'),
+        headers: {
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode(body)
       );
 
       setLoading(false);
