@@ -33,8 +33,8 @@ class _LoginViewState extends State<LoginView> {
     validateUser();
   }
 
-  void validateUser() {
-    ValidateUserParser response = ValidateUserParser.fromJson({
+  void validateUser() async {
+    /*ValidateUserParser response = ValidateUserParser.fromJson({
       "status": "OK",
       "message": "Informació de l'usuari obtinguda correctament",
       "data": {
@@ -44,7 +44,9 @@ class _LoginViewState extends State<LoginView> {
         "validat": true,
         "tos": true,
       }
-    });
+    });*/
+
+    ValidateUserParser response = ValidateUserParser.fromJson(await MainApp.data.callValidateUser(token: MainApp.sd.token!));
 
     if (response.status != "OK") {
       MainApp.sd.token = null;
@@ -193,19 +195,21 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
-  void _handleLogin() {
+  void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       MainApp.data.setServerUrl(_urlController.text);
       
-      AuthenticationParser response = AuthenticationParser.fromJson({
+      /*AuthenticationParser response = AuthenticationParser.fromJson({
         "status": "OK", 
         "message": "Usuari autenticat correctament", 
         "data": {"token": "D23qswfSgR6VM9cuTuN"}
-      });
+      });*/
+      AuthenticationParser response = AuthenticationParser.fromJson(await MainApp.data.callAuthenticateUser(email: _userController.text, password: _passwordController.text));
       
-      if (response.status != "OK") {
-        showDialog(
+      if (response.status.toUpperCase() != "OK") {
+        if (mounted) {
+          showDialog(
           context: context,
           builder: (context) => AlertDialog(
             title: const Text("Error"),
@@ -213,6 +217,7 @@ class _LoginViewState extends State<LoginView> {
             actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))],
           ),
         );
+        }
         setState(() => _isLoading = false);
         return;
       }
