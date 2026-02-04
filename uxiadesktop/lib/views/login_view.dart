@@ -203,24 +203,13 @@ class _LoginViewState extends State<LoginView> {
       setState(() => _isLoading = true);
       MainApp.data.setServerUrl(_urlController.text);
       
-      AuthenticationParser response = AuthenticationParser.fromJson({
-        "status": "OK", 
-        "message": "Usuari autenticat correctament", 
-        "data": {"token": "D23qswfSgR6VM9cuTuN"}
-      });
-
-      /*final rawResponse = await MainApp.data.callAuthenticateUser(
+      final rawResponse = await MainApp.data.callAuthenticateUser(
         email: _userController.text, 
         password: _passwordController.text
       );
 
-      if (rawResponse == null) {
-        setState(() => _isLoading = false);
-        _showErrorDialog("No se pudo conectar con el servidor.");
-        return;
-      }
-
-      AuthenticationParser response = AuthenticationParser.fromJson(rawResponse);*/      
+      AuthenticationParser response = AuthenticationParser.fromJson(rawResponse);
+      print(rawResponse);
 
       if (response.status.toUpperCase() != "OK") {
         if (mounted) {

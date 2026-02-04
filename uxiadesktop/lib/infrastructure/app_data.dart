@@ -55,6 +55,9 @@ class AppData extends ChangeNotifier {
       final response = await _client!.post(
         Uri.parse('https://$_serverUrl/api/admin/usuaris/login'),
         body: jsonEncode(body),
+        headers: {
+          "Content-Type": "application/json"
+        }
       );
 
       setLoading(false);
@@ -78,6 +81,7 @@ class AppData extends ChangeNotifier {
         Uri.parse('http://$_serverUrl/api/usuaris/perfil'),
         headers: {
           "Authorization": "Bearer $_sessionId",
+          "Content-Type": "application/json"
         },
       );
 
