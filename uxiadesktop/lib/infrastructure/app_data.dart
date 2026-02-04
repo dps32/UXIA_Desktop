@@ -53,7 +53,7 @@ class AppData extends ChangeNotifier {
 
     try {
       final response = await _client!.post(
-        Uri.parse('$_serverUrl/api/admin/usuaris/login'),
+        Uri.parse('https://$_serverUrl/api/admin/usuaris/login'),
         body: jsonEncode(body),
       );
 
@@ -69,15 +69,15 @@ class AppData extends ChangeNotifier {
     }
   }
 
-  Future<dynamic> callValidateUser({required String token}) async {
+  Future<dynamic> callValidateUser() async {
     setLoading(true);
     notifyListeners();
 
     try {
       final response = await _client!.get(
-        Uri.parse('$_serverUrl/api/usuaris/perfil'),
+        Uri.parse('http://$_serverUrl/api/usuaris/perfil'),
         headers: {
-          "Authorization": "Bearer $token",
+          "Authorization": "Bearer $_sessionId",
         },
       );
 
@@ -93,7 +93,7 @@ class AppData extends ChangeNotifier {
     }
   }
 
-  Future<dynamic> callValidateToken({required String username, required String token}) async {
+  Future<dynamic> callValidateToken({required String username}) async {
     setLoading(true);
     notifyListeners();
 
@@ -103,9 +103,9 @@ class AppData extends ChangeNotifier {
 
     try {
       final response = await _client!.post(
-        Uri.parse('$_serverUrl/api/admin/usuaris/testtoken'),
+        Uri.parse('https://$_serverUrl/api/admin/usuaris/testtoken'),
         headers: {
-          "Authorization": "Bearer $token",
+          "Authorization": "Bearer $_sessionId",
         },
         body: jsonEncode(body)
       );
@@ -122,7 +122,7 @@ class AppData extends ChangeNotifier {
     }
   }
 
-  Future<dynamic> callLogOut({required String username, required String token}) async {
+  Future<dynamic> callLogOut({required String username}) async {
     setLoading(true);
     notifyListeners();
 
@@ -132,9 +132,9 @@ class AppData extends ChangeNotifier {
 
     try {
       final response = await _client!.post(
-        Uri.parse('$_serverUrl/api/admin/usuaris/logout'),
+        Uri.parse('https://$_serverUrl/api/admin/usuaris/logout'),
         headers: {
-          "Authorization": "Bearer $token",
+          "Authorization": "Bearer $_sessionId",
         },
         body: jsonEncode(body)
       );

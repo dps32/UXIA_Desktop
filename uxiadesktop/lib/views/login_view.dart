@@ -34,7 +34,7 @@ class _LoginViewState extends State<LoginView> {
   }
 
   void validateUser() async {
-    /*ValidateUserParser response = ValidateUserParser.fromJson({
+    ValidateUserParser response = ValidateUserParser.fromJson({
       "status": "OK",
       "message": "Informació de l'usuari obtinguda correctament",
       "data": {
@@ -44,9 +44,9 @@ class _LoginViewState extends State<LoginView> {
         "validat": true,
         "tos": true,
       }
-    });*/
+    });
 
-    ValidateUserParser response = ValidateUserParser.fromJson(await MainApp.data.callValidateUser(token: MainApp.sd.token!));
+    //ValidateUserParser response = ValidateUserParser.fromJson(await MainApp.data.callValidateUser());
 
     if (response.status != "OK") {
       MainApp.sd.token = null;
@@ -120,7 +120,8 @@ class _LoginViewState extends State<LoginView> {
                         controller: _urlController,
                         label: 'Server URL',
                         icon: Icons.dns_outlined,
-                        hint: 'http://your.domain.com',
+                        hint: 'your.domain.com',
+                        isURL: true
                       ),
                       const SizedBox(height: 16),
                       _buildTextField(
@@ -175,6 +176,7 @@ class _LoginViewState extends State<LoginView> {
     required IconData icon,
     String? hint,
     bool isPassword = false,
+    bool isURL = false
   }) {
     return TextFormField(
       controller: controller,
@@ -182,6 +184,7 @@ class _LoginViewState extends State<LoginView> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
+        prefixText: isURL ? 'https://' : null,
         prefixIcon: Icon(icon),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         suffixIcon: isPassword 
@@ -200,12 +203,13 @@ class _LoginViewState extends State<LoginView> {
       setState(() => _isLoading = true);
       MainApp.data.setServerUrl(_urlController.text);
       
-      /*AuthenticationParser response = AuthenticationParser.fromJson({
+      AuthenticationParser response = AuthenticationParser.fromJson({
         "status": "OK", 
         "message": "Usuari autenticat correctament", 
         "data": {"token": "D23qswfSgR6VM9cuTuN"}
-      });*/
-      AuthenticationParser response = AuthenticationParser.fromJson(await MainApp.data.callAuthenticateUser(email: _userController.text, password: _passwordController.text));
+      });
+      //dynamic json = await MainApp.data.callAuthenticateUser(email: _userController.text, password: _passwordController.text);
+      //AuthenticationParser response = AuthenticationParser.fromJson(json);
       
       if (response.status.toUpperCase() != "OK") {
         if (mounted) {

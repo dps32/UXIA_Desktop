@@ -15,13 +15,11 @@ class _MainViewState extends State<MainView> {
   bool _isLoading = false;
 
   void goToPreviousView() {
-  // 1. Preparamos el mensaje
   ValidateTokenParser response = ValidateTokenParser.fromJson({
     "status": "OK",
     "message": "Log out realitzat correctament!"
   });
 
-  // 2. Guardamos la referencia al Navigator de la vista ANTES de abrir el diálogo
   final navigator = Navigator.of(context);
 
   showDialog(
@@ -144,7 +142,6 @@ class _MainViewState extends State<MainView> {
   void _verifyToken() {
     setState(() => _isLoading = true);
 
-    // Simulación de respuesta
     ValidateTokenParser response = ValidateTokenParser.fromJson({
       "status": "OK", 
       "message": "Token is valid"
