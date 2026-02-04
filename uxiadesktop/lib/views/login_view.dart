@@ -198,29 +198,6 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
-  void _showErrorDialog(String message) {
-    if (!mounted) return; // Verifica que el widget aún existe
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.error_outline, color: Colors.red),
-            SizedBox(width: 10),
-            Text("Error"),
-          ],
-        ),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Aceptar"),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
