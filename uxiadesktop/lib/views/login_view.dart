@@ -198,6 +198,29 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
+  void _showErrorDialog(String message) {
+    if (!mounted) return; // Verifica que el widget aún existe
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.error_outline, color: Colors.red),
+            SizedBox(width: 10),
+            Text("Error"),
+          ],
+        ),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Aceptar"),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
@@ -208,9 +231,20 @@ class _LoginViewState extends State<LoginView> {
         "message": "Usuari autenticat correctament", 
         "data": {"token": "D23qswfSgR6VM9cuTuN"}
       });
-      //dynamic json = await MainApp.data.callAuthenticateUser(email: _userController.text, password: _passwordController.text);
-      //AuthenticationParser response = AuthenticationParser.fromJson(json);
-      
+
+      /*final rawResponse = await MainApp.data.callAuthenticateUser(
+        email: _userController.text, 
+        password: _passwordController.text
+      );
+
+      if (rawResponse == null) {
+        setState(() => _isLoading = false);
+        _showErrorDialog("No se pudo conectar con el servidor.");
+        return;
+      }
+
+      AuthenticationParser response = AuthenticationParser.fromJson(rawResponse);*/      
+
       if (response.status.toUpperCase() != "OK") {
         if (mounted) {
           showDialog(
