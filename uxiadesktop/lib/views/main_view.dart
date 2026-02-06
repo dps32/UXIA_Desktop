@@ -6,7 +6,6 @@ class MainView extends StatelessWidget {
   final BoxConstraints bxConstraints;
   const MainView({super.key, required this.bxConstraints});
 
-  // Mantenemos la lógica de cerrar sesión
   void _logout(BuildContext context) {
     ValidateTokenParser response = ValidateTokenParser.fromJson({
       "status": "OK", 
