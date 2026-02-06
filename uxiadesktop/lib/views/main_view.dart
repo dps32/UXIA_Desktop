@@ -2,57 +2,66 @@ import 'package:flutter/material.dart';
 import 'package:uxiadesktop/main.dart';
 import 'package:uxiadesktop/parsers/validate_token_parser.dart';
 
-class MainView extends StatefulWidget {
+class MainView extends StatelessWidget {
   final BoxConstraints bxConstraints;
   const MainView({super.key, required this.bxConstraints});
 
-  @override
-  State<StatefulWidget> createState() => _MainViewState();
-}
+  // Mantenemos la lógica de cerrar sesión
+  void _logout(BuildContext context) {
+    ValidateTokenParser response = ValidateTokenParser.fromJson({
+      "status": "OK", 
+      "message": "S'ha tancat sessió correctament!"
+    });
 
-class _MainViewState extends State<MainView> {
-  final String _username = MainApp.data.username!;
+    final navigator = Navigator.of(context);
 
-  void goToPreviousView() {
-  ValidateTokenParser response = ValidateTokenParser.fromJson({
-    "status": "OK",
-    "message": "S'ha tancat sessió correctament!"
-  });
-
-  final navigator = Navigator.of(context);
-
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext dialogContext) {
-      return AlertDialog(
-        title: const Text("Sessió"),
-        content: Text(response.message),
-        actions: [
-          TextButton(
-            child: const Text("D'acord"),
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-
-              MainApp.data.setSessionId('');
-              MainApp.sd.token = null;
-              MainApp.fr.saveData(MainApp.sd.url, MainApp.sd.token);
-
-              Future.microtask(() {
-                if (mounted && navigator.canPop()) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text("Sessió"),
+          content: Text(response.message),
+          actions: [
+            TextButton(
+              child: const Text("D'acord"),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                MainApp.data.setSessionId('');
+                MainApp.sd.token = null;
+                MainApp.fr.saveData(MainApp.sd.url, MainApp.sd.token);
+                
+                if (navigator.canPop()) {
                   navigator.pop();
                 }
-              });
-            },
-          ),
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showInDevelopmentDialog(BuildContext context, String featureName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(featureName),
+        content: const Text("Aquesta funcionalitat encara està en procés de desenvolupament."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("D'acord"),
+          )
         ],
-      );
-    },
-  );
-}
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final String username = MainApp.data.username ?? "Usuari";
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -65,7 +74,7 @@ class _MainViewState extends State<MainView> {
         actions: [
           Center(
             child: Text(
-              "Benvingut, $_username",
+              "Benvingut, $username",
               style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
             ),
           ),
@@ -78,11 +87,9 @@ class _MainViewState extends State<MainView> {
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
             tooltip: "Tancar sessió",
-            onPressed: () {
-              goToPreviousView();
-            },
+            onPressed: () => _logout(context),
           ),
-          SizedBox(width: widget.bxConstraints.maxWidth / 40),
+          SizedBox(width: bxConstraints.maxWidth / 40),
         ],
       ),
       body: Center(
@@ -94,22 +101,20 @@ class _MainViewState extends State<MainView> {
               spacing: 32,
               runSpacing: 32,
               alignment: WrapAlignment.center,
-              runAlignment: WrapAlignment.center,
-              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                _buildFeatureCard(
+                FeatureCard(
                   title: "Gestió d'Usuaris",
                   description: "Administra els usuaris del sistema.",
                   icon: Icons.people_alt_rounded,
                   color: Colors.orange[700]!,
-                  onTap: () => _showInDevelopmentDialog("Gestió d'Usuaris"),
+                  onTap: () => _showInDevelopmentDialog(context, "Gestió d'Usuaris"),
                 ),
-                _buildFeatureCard(
+                FeatureCard(
                   title: "Estadístiques de les imatges",
                   description: "Revisa els tags que les imatges a l'aplicació UXIA estan generant.",
                   icon: Icons.leaderboard,
                   color: Colors.teal[700]!,
-                  onTap: () => _showInDevelopmentDialog("Configuració del Sistema"),
+                  onTap: () => _showInDevelopmentDialog(context, "Estadístiques"),
                 ),
               ],
             ),
@@ -118,67 +123,103 @@ class _MainViewState extends State<MainView> {
       ),
     );
   }
+}
 
-  Widget _buildFeatureCard({
-    required String title,
-    required String description,
-    required IconData icon,
-    required Color color,
-    required VoidCallback? onTap,
-  }) {
-    return SizedBox(
-      width: 350,
-      height: 290,
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: InkWell( 
+class FeatureCard extends StatefulWidget {
+  final String title;
+  final String description;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const FeatureCard({
+    super.key,
+    required this.title,
+    required this.description,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  State<FeatureCard> createState() => _FeatureCardState();
+}
+
+class _FeatureCardState extends State<FeatureCard> {
+  bool isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final hoveredTransform = Matrix4.translationValues(0, -10, 0);
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => isHovered = true),
+      onExit: (_) => setState(() => isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        transform: isHovered ? hoveredTransform : Matrix4.identity(),
+        width: 350,
+        height: 300,
+        decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(32.0),
-            child: Column(
-              children: [
-                Icon(icon, size: 60, color: color),
-                const SizedBox(height: 20),
-                Text(
-                  title,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  description,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Color.fromARGB(255, 99, 99, 99), fontSize: 14),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 16),
-                Divider(color: Colors.grey[200]),
-                Text(
-                  "Prémer per obrir",
-                  style: TextStyle(color: color, fontWeight: FontWeight.bold),
-                ),
-              ],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isHovered ? 0.12 : 0.05),
+              blurRadius: isHovered ? 20 : 10,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Card(
+          elevation: 0,
+          color: isHovered ? Colors.white : Colors.white.withValues(alpha: 0.9),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: widget.onTap,
+            child: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AnimatedScale(
+                    scale: isHovered ? 1.15 : 1.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(widget.icon, size: 60, color: widget.color),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    widget.title,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: Text(
+                      widget.description,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.grey, fontSize: 14),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 3,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Divider(color: Colors.grey[200]),
+                  Text(
+                    "Prémer per obrir",
+                    style: TextStyle(
+                      color: widget.color, 
+                      fontWeight: FontWeight.bold,
+                      decoration: isHovered ? TextDecoration.underline : null,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  void _showInDevelopmentDialog(String featureName) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(featureName),
-        content: const Text("Aquesta funcionalitat encara està en procés de desenvolupament."),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("D'acord"),
-          )
-        ],
       ),
     );
   }
