@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uxiadesktop/main.dart';
 import 'package:uxiadesktop/parsers/validate_token_parser.dart';
+import 'package:uxiadesktop/views/manage_users_view.dart';
 
 class MainView extends StatelessWidget {
   final BoxConstraints bxConstraints;
@@ -38,6 +39,13 @@ class MainView extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  void _manageUsers(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ManageUsersView()),
     );
   }
 
@@ -106,7 +114,7 @@ class MainView extends StatelessWidget {
                   description: "Administra els usuaris del sistema.",
                   icon: Icons.people_alt_rounded,
                   color: Colors.orange[700]!,
-                  onTap: () => _showInDevelopmentDialog(context, "Gestió d'Usuaris"),
+                  onTap: () => _manageUsers(context),
                 ),
                 FeatureCard(
                   title: "Estadístiques de les imatges",
