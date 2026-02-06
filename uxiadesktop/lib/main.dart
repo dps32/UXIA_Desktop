@@ -20,11 +20,6 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        /* appBar: AppBar(
-          title: Text("Hola Mundo!"),
-          backgroundColor: Colors.deepPurple,
-          elevation: 0,
-        ), */
         body: Center(
           child: LayoutBuilder(
             builder: (context, constraints) {
