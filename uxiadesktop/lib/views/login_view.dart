@@ -106,11 +106,11 @@ class _LoginViewState extends State<LoginView> {
                 const Icon(Icons.account_balance_wallet, size: 64, color: Colors.blue),
                 const SizedBox(height: 16),
                 const Text(
-                  "UXIA Management",
+                  "Gestió d'UXIA",
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                Text("Please sign in to continue", style: TextStyle(color: Colors.grey[600])),
+                Text("Si us plau, logueja\'t per a continuar", style: TextStyle(color: Colors.grey[600])),
                 const SizedBox(height: 32),
                 Form(
                   key: _formKey,
@@ -118,21 +118,21 @@ class _LoginViewState extends State<LoginView> {
                     children: [
                       _buildTextField(
                         controller: _urlController,
-                        label: 'Server URL',
+                        label: 'URL del servidor',
                         icon: Icons.dns_outlined,
-                        hint: 'your.domain.com',
+                        hint: 'el.teu.domini.com',
                         isURL: true
                       ),
                       const SizedBox(height: 16),
                       _buildTextField(
                         controller: _userController,
-                        label: 'Username',
+                        label: 'Email',
                         icon: Icons.person_outline,
                       ),
                       const SizedBox(height: 16),
                       _buildTextField(
                         controller: _passwordController,
-                        label: 'Password',
+                        label: 'Contrasenya',
                         icon: Icons.lock_outline,
                         isPassword: true,
                       ),
@@ -152,7 +152,7 @@ class _LoginViewState extends State<LoginView> {
                             : const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text('Login', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                  Text('Logueja\'t', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                                   SizedBox(width: 8),
                                   Icon(Icons.arrow_forward),
                                 ],
@@ -194,7 +194,7 @@ class _LoginViewState extends State<LoginView> {
             )
           : null,
       ),
-      validator: (value) => (value == null || value.isEmpty) ? 'Field required' : null,
+      validator: (value) => (value == null || value.isEmpty) ? 'Camp obligatori' : null,
     );
   }
 
