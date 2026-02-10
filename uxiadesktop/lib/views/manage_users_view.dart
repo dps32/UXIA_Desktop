@@ -11,10 +11,24 @@ class _ManageUsersViewState extends State<ManageUsersView> {
   List<Map<String, dynamic>> _usersList = [];
   bool _isLoading = false;
 
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     _fetchUsers();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchUsers() async {
@@ -33,6 +47,36 @@ class _ManageUsersViewState extends State<ManageUsersView> {
     });
   }
 
+  Future<void> _createUser() async {
+    setState(() => _isLoading = true);
+
+    // Simulamos la latencia de red
+    await Future.delayed(const Duration(seconds: 1));
+
+    final newUser = {
+      "id": _usersList.length,
+      "username": _nameController.text,
+      "email": _emailController.text,
+      "phone": _phoneController.text,
+    };
+
+    setState(() {
+      _usersList.insert(0, newUser);
+      _isLoading = false;
+    });
+
+    _nameController.clear();
+    _emailController.clear();
+    _phoneController.clear();
+    _passwordController.clear();
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Usuari creat correctament")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,9 +88,9 @@ class _ManageUsersViewState extends State<ManageUsersView> {
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_add, color: Colors.green,),
+            icon: const Icon(Icons.person_add, color: Colors.green),
             tooltip: "Afegir un nou usuari",
-            onPressed: _isLoading ? null : _fetchUsers,
+            onPressed: _isLoading ? null : _showAddUserDialog, 
           ),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
@@ -77,6 +121,7 @@ class _ManageUsersViewState extends State<ManageUsersView> {
                         userEmail: user["email"],
                         userPhone: user["phone"],
                         onDelete: () => _confirmDelete(user["username"]),
+                        onEdit: () => _showNotImplementedDialog(),
                       );
                     },
                   )
@@ -124,6 +169,177 @@ class _ManageUsersViewState extends State<ManageUsersView> {
       ),
     );
   }
+
+  void _showAddUserDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Column(
+          children: [
+            CircleAvatar(
+              backgroundColor: Colors.green.withOpacity(0.1),
+              radius: 28,
+              child: const Icon(Icons.person_add_rounded, color: Colors.green, size: 30),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              "Nou Usuari",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+            ),
+            const Text(
+              "Introdueix les dades del nou membre",
+              style: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.normal),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              _buildTextField(
+                controller: _nameController,
+                label: "Nom Complet",
+                icon: Icons.badge_outlined,
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                controller: _emailController,
+                label: "Correu Electrònic",
+                icon: Icons.email_outlined,
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                controller: _phoneController,
+                label: "Telèfon",
+                icon: Icons.phone_android_outlined,
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                controller: _passwordController,
+                label: "Contrasenya",
+                icon: Icons.lock_outline,
+                isPassword: true,
+              ),
+            ],
+          ),
+        ),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+
+              await Future.delayed(const Duration(milliseconds: 300));
+
+              _nameController.clear();
+              _emailController.clear();
+              _phoneController.clear();
+              _passwordController.clear();
+            },
+            child: const Text("Cancel·lar", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              elevation: 0,
+            ),
+            onPressed: () async {
+              if (_nameController.text.isNotEmpty && _emailController.text.isNotEmpty && _passwordController.text.isNotEmpty && _phoneController.text.isNotEmpty) {
+                Navigator.pop(context);
+
+                await Future.delayed(const Duration(milliseconds: 300));
+
+                _createUser();
+              }
+            },
+            child: const Text("Crear Usuari", style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showNotImplementedDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Column(
+          children: [
+            CircleAvatar(
+              backgroundColor: Colors.blue.withOpacity(0.1),
+              radius: 28,
+              child: const Icon(Icons.construction_rounded, color: Colors.blue, size: 30),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              "Funcionalitat en camí",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ],
+        ),
+        content: const Text(
+          "L'opció de modificar usuaris encara no està disponible. Estem treballant per implementar-la ben aviat!",
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.black54),
+        ),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        actions: [
+          Center(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                elevation: 0,
+              ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Entès", style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool isPassword = false,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: isPassword,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, size: 20),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.green, width: 2),
+        ),
+        filled: true,
+        fillColor: Colors.grey[50],
+        contentPadding: const EdgeInsets.symmetric(vertical: 16),
+      ),
+    );
+  }
 }
 
 class _UserListItem extends StatelessWidget {
@@ -132,6 +348,7 @@ class _UserListItem extends StatelessWidget {
   final String userEmail;
   final String userPhone;
   final VoidCallback onDelete;
+  final VoidCallback onEdit;
 
   const _UserListItem({
     required this.id,
@@ -139,6 +356,7 @@ class _UserListItem extends StatelessWidget {
     required this.userEmail,
     required this.userPhone,
     required this.onDelete,
+    required this.onEdit
   });
 
   @override
@@ -169,7 +387,7 @@ class _UserListItem extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.edit_outlined, color: Colors.lightBlue, size: 20),
-                    onPressed: () {},
+                    onPressed: onEdit,
                     tooltip: 'Modificar usuari',
                   ),
                   IconButton(
