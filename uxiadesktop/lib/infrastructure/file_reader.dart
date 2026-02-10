@@ -40,6 +40,7 @@ class FileReader {
         return fileRead;
       }
 
+      MainApp.data.setServerUrl(url);
       MainApp.sd.url = url;
       MainApp.sd.token = token;
       

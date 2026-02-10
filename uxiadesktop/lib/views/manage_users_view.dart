@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:uxiadesktop/main.dart';
+import 'package:uxiadesktop/parsers/fetch_users_parser.dart';
 
 class ManageUsersView extends StatefulWidget {
   const ManageUsersView({super.key});
@@ -8,7 +10,7 @@ class ManageUsersView extends StatefulWidget {
 }
 
 class _ManageUsersViewState extends State<ManageUsersView> {
-  List<Map<String, dynamic>> _usersList = [];
+  List<FetchUsersParser> _usersList = [];
   bool _isLoading = false;
 
   final _nameController = TextEditingController();
@@ -33,37 +35,36 @@ class _ManageUsersViewState extends State<ManageUsersView> {
 
   Future<void> _fetchUsers() async {
     setState(() => _isLoading = true);
-    
-    await Future.delayed(const Duration(seconds: 1));
+  
+    final dynamic data = await MainApp.data.callFetchUsers(); 
 
-    setState(() {
-      _usersList = List.generate(16, (index) => {
-        "id": index,
-        "username": "Usuari $index",
-        "email": "usuari$index@uxia.com",
-        "phone": "+34 123456789"
+    if (data != null && data is List) {
+      setState(() {
+        _usersList = data.map((userJson) => FetchUsersParser.fromJson(userJson)).toList();
+        _isLoading = false;
       });
-      _isLoading = false;
-    });
+    } else {
+      setState(() => _isLoading = false);
+    }
   }
-
+  
   Future<void> _createUser() async {
     setState(() => _isLoading = true);
 
     // Simulamos la latencia de red
     await Future.delayed(const Duration(seconds: 1));
 
-    final newUser = {
+    /* final newUser = {
       "id": _usersList.length,
       "username": _nameController.text,
-      "email": _emailController.text,
+      "email": _emailController.text, 
       "phone": _phoneController.text,
     };
-
-    setState(() {
+ */
+    /* setState(() {
       _usersList.insert(0, newUser);
       _isLoading = false;
-    });
+    }); */
 
     _nameController.clear();
     _emailController.clear();
@@ -112,20 +113,19 @@ class _ManageUsersViewState extends State<ManageUsersView> {
                 : _usersList.isEmpty 
                   ? const Center(child: Text("No hi ha usuaris disponibles."))
                   : ListView.builder(
-                    itemCount: _usersList.length,
-                    itemBuilder: (context, index) {
-                      final user = _usersList[index];
-                      return _UserListItem(
-                        id: user["id"],
-                        userName: user["username"],
-                        userEmail: user["email"],
-                        userPhone: user["phone"],
-                        onDelete: () => _confirmDelete(user["username"]),
-                        onEdit: () => _showNotImplementedDialog(),
-                      );
-                    },
-                  )
-            ),
+                      itemCount: _usersList.length,
+                      itemBuilder: (context, index) {
+                        final user = _usersList[index];
+                        return _UserListItem(
+                          id: user.id,               
+                          userName: user.username,
+                          userEmail: user.email,
+                          userPhone: user.phone,
+                          onDelete: () => _confirmDelete(user.username),
+                          onEdit: () => _showNotImplementedDialog(),
+                        );
+                      },
+                    ),                  )
           ],
         ),
       ),
@@ -343,7 +343,7 @@ class _ManageUsersViewState extends State<ManageUsersView> {
 }
 
 class _UserListItem extends StatelessWidget {
-  final int id;
+  final String id;
   final String userName;
   final String userEmail;
   final String userPhone;
@@ -376,7 +376,13 @@ class _UserListItem extends StatelessWidget {
               child: Icon(Icons.person, color: Colors.blue, size: 20),
             ),
             const SizedBox(width: 16),
-            Expanded(flex: 1, child: Text("#$id", style: const TextStyle(color: Colors.grey, fontSize: 13))),
+            Expanded(flex: 1, child: Text(
+              id,
+              style: const TextStyle(color: Colors.grey, fontSize: 13),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              softWrap: false,)
+            ),
             Expanded(flex: 2, child: Text(userName, style: const TextStyle(fontWeight: FontWeight.w500))),
             Expanded(flex: 3, child: Text(userEmail, style: TextStyle(color: Colors.grey[600]))),
             Expanded(flex: 2, child: Text(userPhone, style: const TextStyle(fontSize: 13))),

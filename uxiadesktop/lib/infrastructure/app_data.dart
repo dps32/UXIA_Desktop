@@ -155,6 +155,27 @@ class AppData extends ChangeNotifier {
     }
   }
 
+  Future<dynamic> callFetchUsers() async {
+    setLoading(true);
+    notifyListeners();
+
+    try {
+      final response = await _client!.get(
+        Uri.parse('https://$_serverUrl/api/admin/usuaris/listUsers'),
+      );
+
+      setLoading(false);
+      notifyListeners();
+      return jsonDecode(response.body);
+    
+    } catch (e) {
+      print("Error during API call: $e");
+      setLoading(false);
+      notifyListeners();
+      return null;
+    }
+  }
+
   void cancelRequests() {
     _httpClient?.close(force: true);
     _httpClient = HttpClient();
