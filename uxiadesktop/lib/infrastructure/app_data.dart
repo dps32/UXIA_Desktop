@@ -176,6 +176,38 @@ class AppData extends ChangeNotifier {
     }
   }
 
+  Future<dynamic> callAddUser({required String username, required String password, required String phone, required String email}) async {
+    setLoading(true);
+    notifyListeners();
+
+    final body = {
+      "username": username,
+      "email": email,
+      "password": password,
+      "phone": phone
+    };
+
+    try {
+      final response = await _client!.post(
+        Uri.parse('https://$_serverUrl/api/admin/usuaris/addUser'),
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: jsonEncode(body)
+      );
+
+      setLoading(false);
+      notifyListeners();
+      return jsonDecode(response.body);
+    
+    } catch (e) {
+      print("Error during API call: $e");
+      setLoading(false);
+      notifyListeners();
+      return null;
+    }
+  }
+
   void cancelRequests() {
     _httpClient?.close(force: true);
     _httpClient = HttpClient();

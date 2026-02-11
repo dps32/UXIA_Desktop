@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uxiadesktop/main.dart';
 import 'package:uxiadesktop/parsers/fetch_users_parser.dart';
+import 'package:uxiadesktop/parsers/user_created_parser.dart';
 
 class ManageUsersView extends StatefulWidget {
   const ManageUsersView({super.key});
@@ -51,20 +52,7 @@ class _ManageUsersViewState extends State<ManageUsersView> {
   Future<void> _createUser() async {
     setState(() => _isLoading = true);
 
-    // Simulamos la latencia de red
-    await Future.delayed(const Duration(seconds: 1));
-
-    /* final newUser = {
-      "id": _usersList.length,
-      "username": _nameController.text,
-      "email": _emailController.text, 
-      "phone": _phoneController.text,
-    };
- */
-    /* setState(() {
-      _usersList.insert(0, newUser);
-      _isLoading = false;
-    }); */
+    UserCreatedParser response = UserCreatedParser.fromJson(await MainApp.data.callAddUser(username: _nameController.text, email: _emailController.text, phone: _phoneController.text, password: _passwordController.text));
 
     _nameController.clear();
     _emailController.clear();
@@ -72,9 +60,21 @@ class _ManageUsersViewState extends State<ManageUsersView> {
     _passwordController.clear();
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Usuari creat correctament")),
-      );
+      if (response.status! == "OK") {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Usuari creat correctament")),
+        );
+        _fetchUsers();
+
+        return;
+      }
+      else {
+        final error = response.errors!.first;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error al crear l'usuari: \n - $error")),
+        );
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -143,7 +143,7 @@ class _ManageUsersViewState extends State<ManageUsersView> {
         children: const [
           SizedBox(width: 40), // Espacio del avatar
           SizedBox(width: 16),
-          Expanded(flex: 1, child: Text("ID", style: TextStyle(fontWeight: FontWeight.bold))),
+          Expanded(flex: 3, child: Text("ID", style: TextStyle(fontWeight: FontWeight.bold))),
           Expanded(flex: 2, child: Text("Nom", style: TextStyle(fontWeight: FontWeight.bold))),
           Expanded(flex: 3, child: Text("Email", style: TextStyle(fontWeight: FontWeight.bold))),
           Expanded(flex: 2, child: Text("Telèfon", style: TextStyle(fontWeight: FontWeight.bold))),
@@ -376,7 +376,7 @@ class _UserListItem extends StatelessWidget {
               child: Icon(Icons.person, color: Colors.blue, size: 20),
             ),
             const SizedBox(width: 16),
-            Expanded(flex: 1, child: Text(
+            Expanded(flex: 3, child: Text(
               id,
               style: const TextStyle(color: Colors.grey, fontSize: 13),
               overflow: TextOverflow.ellipsis,
