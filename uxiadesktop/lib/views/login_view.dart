@@ -33,30 +33,27 @@ class _LoginViewState extends State<LoginView> {
     validateUser();
   }
 
-  void validateUser() async {
-    ValidateUserParser response = ValidateUserParser.fromJson({
-      "status": "OK",
-      "message": "Informació de l'usuari obtinguda correctament",
-      "data": {
-        "nickname": "SparkleFuzzMcGee",
-        "email": "user@example.com",
-        "telefon": "+34 600 000 000",
-        "validat": true,
-        "tos": true,
-      }
-    });
+  Future<void> validateUser() async {
+    final rawResponse = await MainApp.data.callValidateUser();
+    ValidateUserParser response = ValidateUserParser.fromJson(rawResponse);
 
-    //ValidateUserParser response = ValidateUserParser.fromJson(await MainApp.data.callValidateUser());
+    print(rawResponse);
 
     if (response.status != "OK") {
       MainApp.sd.token = null;
       MainApp.fr.saveData(MainApp.sd.url, null);
       setState(() => _isLoading = false);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Usuari amb un token erroni")),
+        );
+      }
       return;
     }
     
     MainApp.data.setSessionId(MainApp.sd.token!);
-    MainApp.data.username = response.data.nickname;
+    MainApp.data.username = response.data?.nickname;
     goToNextView();
   }
 

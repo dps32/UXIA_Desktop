@@ -41,7 +41,6 @@ class AppData extends ChangeNotifier {
     notifyListeners();
   }
 
-
   Future<dynamic> callAuthenticateUser({required String email, required String password}) async {
     setLoading(true);
     notifyListeners();
@@ -78,10 +77,11 @@ class AppData extends ChangeNotifier {
 
     try {
       final response = await _client!.get(
-        Uri.parse('http://$_serverUrl/api/usuaris/perfil'),
+        Uri.parse('https://$_serverUrl/api/admin/usuaris/perfil'),
         headers: {
-          "Authorization": "Bearer $_sessionId",
-          "Content-Type": "application/json"
+          "Authorization": "Bearer ${_sessionId.trim()}",
+          "Content-Type": "application/json",
+          "Accept": "application/json"
         },
       );
 
@@ -110,6 +110,7 @@ class AppData extends ChangeNotifier {
         Uri.parse('https://$_serverUrl/api/admin/usuaris/testtoken'),
         headers: {
           "Authorization": "Bearer $_sessionId",
+          "Content-Type": "application/json"
         },
         body: jsonEncode(body)
       );
@@ -139,6 +140,7 @@ class AppData extends ChangeNotifier {
         Uri.parse('https://$_serverUrl/api/admin/usuaris/logout'),
         headers: {
           "Authorization": "Bearer $_sessionId",
+          "Content-Type": "application/json"
         },
         body: jsonEncode(body)
       );

@@ -1,29 +1,31 @@
 class ValidateUserParser {
   final String status;
-  final String message;
-  final Data data;
+  final String? message;
+  final Data? data; // Ahora es opcional
 
-  ValidateUserParser(this.status, this.message, this.data);
+  ValidateUserParser({required this.status, this.message, this.data});
   
-  ValidateUserParser.fromJson(dynamic json)
-    : status = json['status'] as String,
-      message = json['message'] as String,
-      data = Data.fromJson(json['data']);
+  factory ValidateUserParser.fromJson(Map<String, dynamic> json) {
+    return ValidateUserParser(
+      status: json['status'] as String,
+      message: json['message'] as String?,
+      data: json['data'] != null ? Data.fromJson(json['data']) : null,
+    );
+  }
 }
 
 class Data {
-    final String nickname;
-    final String email;
-    final String telefon;
-    final bool validat;
-    final bool tos;
+  final String nickname;
+  final String email;
+  final String telefon;
 
-    Data(this.nickname, this.email, this.telefon, this.validat, this.tos);
+  Data({required this.nickname, required this.email, required this.telefon});
 
-    Data.fromJson(dynamic json)
-      : nickname = json['nickname'] as String,
-        email = json['email'] as String,
-        telefon = json['telefon'] as String,
-        validat = json['validat'] as bool,
-        tos = json['tos'] as bool;
+  factory Data.fromJson(Map<String, dynamic> json) {
+    return Data(
+      nickname: json['nickname'] as String,
+      email: json['email'] as String,
+      telefon: json['telefon'] as String,
+    );
   }
+}
