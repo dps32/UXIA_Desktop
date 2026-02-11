@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:uxiadesktop/main.dart';
 import 'package:uxiadesktop/parsers/fetch_users_parser.dart';
 import 'package:uxiadesktop/parsers/user_created_parser.dart';
+import 'package:uxiadesktop/parsers/user_deleted_parser.dart';
 
 class ManageUsersView extends StatefulWidget {
   const ManageUsersView({super.key});
@@ -78,6 +79,29 @@ class _ManageUsersViewState extends State<ManageUsersView> {
     }
   }
 
+  Future<void> _deleteUser(String id) async {
+    setState(() => _isLoading = true);
+
+    UserDeletedParser response = UserDeletedParser.fromJson(await MainApp.data.callDeleteUser(id: id));
+
+    if (mounted) {
+      if (response.status! == "OK") {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Usuari eliminat correctament")),
+        );
+        _fetchUsers();
+
+        return;
+      }
+      else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error al eliminar a l'usuari")),
+        );
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -121,7 +145,7 @@ class _ManageUsersViewState extends State<ManageUsersView> {
                           userName: user.username,
                           userEmail: user.email,
                           userPhone: user.phone,
-                          onDelete: () => _confirmDelete(user.username),
+                          onDelete: () => _confirmDelete(user.username, user.id),
                           onEdit: () => _showNotImplementedDialog(),
                         );
                       },
@@ -153,7 +177,7 @@ class _ManageUsersViewState extends State<ManageUsersView> {
     );
   }
 
-  void _confirmDelete(String name) {
+  void _confirmDelete(String name, String id) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -162,7 +186,10 @@ class _ManageUsersViewState extends State<ManageUsersView> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel·lar")),
           TextButton(
-            onPressed: () => Navigator.pop(context), 
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteUser(id);
+            },
             child: const Text("Eliminar", style: TextStyle(color: Colors.red))
           ),
         ],

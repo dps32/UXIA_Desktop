@@ -208,6 +208,35 @@ class AppData extends ChangeNotifier {
     }
   }
 
+  Future<dynamic> callDeleteUser({required String id}) async {
+    setLoading(true);
+    notifyListeners();
+
+    final body = {
+      "id": id
+    };
+
+    try {
+      final response = await _client!.post(
+        Uri.parse('https://$_serverUrl/api/admin/usuaris/deleteUser'),
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: jsonEncode(body)
+      );
+
+      setLoading(false);
+      notifyListeners();
+      return jsonDecode(response.body);
+    
+    } catch (e) {
+      print("Error during API call: $e");
+      setLoading(false);
+      notifyListeners();
+      return null;
+    }
+  }
+
   void cancelRequests() {
     _httpClient?.close(force: true);
     _httpClient = HttpClient();
