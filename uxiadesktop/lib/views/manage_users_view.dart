@@ -85,7 +85,7 @@ class _ManageUsersViewState extends State<ManageUsersView> {
     UserDeletedParser response = UserDeletedParser.fromJson(await MainApp.data.callDeleteUser(id: id));
 
     if (mounted) {
-      if (response.status! == "OK") {
+      if (response.status == "OK") {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Usuari eliminat correctament")),
         );
