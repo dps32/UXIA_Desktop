@@ -7,11 +7,9 @@ class MainView extends StatelessWidget {
   final BoxConstraints bxConstraints;
   const MainView({super.key, required this.bxConstraints});
 
-  void _logout(BuildContext context) {
-    ValidateTokenParser response = ValidateTokenParser.fromJson({
-      "status": "OK", 
-      "message": "S'ha tancat sessió correctament!"
-    });
+  void _logout(BuildContext context) async {
+    final rawResponse = await MainApp.data.callLogOut();
+    ValidateTokenParser response = ValidateTokenParser.fromJson(rawResponse);
 
     final navigator = Navigator.of(context);
 

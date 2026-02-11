@@ -127,13 +127,9 @@ class AppData extends ChangeNotifier {
     }
   }
 
-  Future<dynamic> callLogOut({required String username}) async {
+  Future<dynamic> callLogOut() async {
     setLoading(true);
     notifyListeners();
-
-    final body = {
-      "username": username,
-    };
 
     try {
       final response = await _client!.post(
@@ -142,7 +138,6 @@ class AppData extends ChangeNotifier {
           "Authorization": "Bearer $_sessionId",
           "Content-Type": "application/json"
         },
-        body: jsonEncode(body)
       );
 
       setLoading(false);
