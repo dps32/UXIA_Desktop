@@ -135,7 +135,7 @@ class AppData extends ChangeNotifier {
       final response = await _client!.post(
         Uri.parse('https://$_serverUrl/api/admin/usuaris/logout'),
         headers: {
-          "Authorization": "Bearer $_sessionId",
+          "Authorization": "Bearer ${_sessionId.trim()}",
           "Content-Type": "application/json"
         },
       );
@@ -159,6 +159,9 @@ class AppData extends ChangeNotifier {
     try {
       final response = await _client!.get(
         Uri.parse('https://$_serverUrl/api/admin/usuaris/listUsers'),
+        headers: {
+          "Authorization": "Bearer ${_sessionId.trim()}",
+        }
       );
 
       setLoading(false);
@@ -188,7 +191,8 @@ class AppData extends ChangeNotifier {
       final response = await _client!.post(
         Uri.parse('https://$_serverUrl/api/admin/usuaris/addUser'),
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": "Bearer ${_sessionId.trim()}",
         },
         body: jsonEncode(body)
       );
@@ -217,7 +221,8 @@ class AppData extends ChangeNotifier {
       final response = await _client!.post(
         Uri.parse('https://$_serverUrl/api/admin/usuaris/deleteUser'),
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": "Bearer ${_sessionId.trim()}",
         },
         body: jsonEncode(body)
       );
