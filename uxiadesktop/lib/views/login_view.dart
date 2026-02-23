@@ -37,8 +37,6 @@ class _LoginViewState extends State<LoginView> {
     final rawResponse = await MainApp.data.callValidateUser();
     ValidateUserParser response = ValidateUserParser.fromJson(rawResponse);
 
-    print(rawResponse);
-
     if (response.status != "OK") {
       MainApp.sd.token = null;
       MainApp.fr.saveData(MainApp.sd.url, null);
@@ -206,7 +204,6 @@ class _LoginViewState extends State<LoginView> {
       );
 
       AuthenticationParser response = AuthenticationParser.fromJson(rawResponse);
-      print(rawResponse);
 
       if (response.status.toUpperCase() != "OK") {
         if (mounted) {
