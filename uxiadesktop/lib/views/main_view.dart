@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:uxiadesktop/main.dart';
 import 'package:uxiadesktop/parsers/validate_token_parser.dart';
 import 'package:uxiadesktop/views/manage_users_view.dart';
+import 'package:uxiadesktop/views/statistics_view.dart';
 
 class MainView extends StatelessWidget {
   final BoxConstraints bxConstraints;
@@ -47,19 +48,10 @@ class MainView extends StatelessWidget {
     );
   }
 
-  void _showInDevelopmentDialog(BuildContext context, String featureName) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(featureName),
-        content: const Text("Aquesta funcionalitat encara està en procés de desenvolupament."),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("D'acord"),
-          )
-        ],
-      ),
+  void _statistics(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => StatisticsView()),
     );
   }
 
@@ -119,7 +111,7 @@ class MainView extends StatelessWidget {
                   description: "Revisa els tags que les imatges a l'aplicació UXIA estan generant.",
                   icon: Icons.leaderboard,
                   color: Colors.teal[700]!,
-                  onTap: () => _showInDevelopmentDialog(context, "Estadístiques"),
+                  onTap: () => _statistics(context),
                 ),
               ],
             ),

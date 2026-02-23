@@ -41,6 +41,7 @@ class FileReader {
       }
 
       MainApp.data.setServerUrl(url);
+      MainApp.data.setSessionId(token);
       MainApp.sd.url = url;
       MainApp.sd.token = token;
       
