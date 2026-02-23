@@ -239,6 +239,31 @@ class AppData extends ChangeNotifier {
     }
   }
 
+  Future<dynamic> callGetTags() async {
+    setLoading(true);
+    notifyListeners();
+
+    try {
+      final response = await _client!.get(
+        Uri.parse('https://$_serverUrl/api/getTags'),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer ${_sessionId.trim()}",
+        },
+      );
+
+      setLoading(false);
+      notifyListeners();
+      return jsonDecode(response.body);
+    
+    } catch (e) {
+      print("Error during API call: $e");
+      setLoading(false);
+      notifyListeners();
+      return null;
+    }
+  }
+
   void cancelRequests() {
     _httpClient?.close(force: true);
     _httpClient = HttpClient();
